@@ -19,7 +19,7 @@ const commitTypes: Record<CommitType, string> = {
 	 * Conventional Changelog:
 	 * https://github.com/conventional-changelog/conventional-changelog/blob/d0e5d5926c8addba74bc962553dd8bcfba90e228/packages/conventional-changelog-conventionalcommits/writer-opts.js#L182-L193
 	 */
-	conventional: `Choose a type from the type-to-description JSON below that best describes the git diff, with a maximum of 100 words. Add two line breaks at the end and continue with a bullet-based body:\n${JSON.stringify(
+	conventional: `#### Part 1: Choose the Best Type\nChoose a type from the type-to-description JSON below that best describes the git diff, with a maximum of 100 words as title. Add two line breaks at the end and continue with a bullet-based body:\n\n\`\`\`json\n${JSON.stringify(
 		{
 			docs: 'Documentation only changes',
 			style:
@@ -36,19 +36,19 @@ const commitTypes: Record<CommitType, string> = {
 		},
 		null,
 		2
-	)}`,
+	)}\n\`\`\``,
 };
 
-export const generatePrompt = async (
+export const generatePrompt = (
 	locale: string,
-	maxLength: number,
 	type: CommitType
 ) =>
 	[
-		summarizeFileDiffTemplate,
-		'\n',
-		commitTypeFormats[type],
-		specifyCommitFormat(type)
+		'### Task: Summarize Git Diff with Commit Messages\n',
+		commitTypes[type],
+		specifyCommitFormat(type),
+		'\n#### Part 2: Summarize Git Diff\n',
+		summarizeFileDiffTemplate
 	]
 	.filter(Boolean)
 	.join('\n')
