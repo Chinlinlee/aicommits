@@ -108,7 +108,6 @@ const createChatCompletion = async (
 const sanitizeMessage = (message: string) =>
 	message
 		.trim()
-		.replace(/[\n\r]/g, '')
 		.replace(/(\w)\.$/, '$1');
 
 const deduplicateMessages = (array: string[]) => Array.from(new Set(array));
@@ -149,7 +148,7 @@ export const generateCommitMessage = async (
 				messages: [
 					{
 						role: 'system',
-						content: generatePrompt(locale, maxLength, type),
+						content: await generatePrompt(locale, maxLength, type),
 					},
 					{
 						role: 'user',
@@ -167,7 +166,6 @@ export const generateCommitMessage = async (
 			timeout,
 			proxy
 		);
-
 		return deduplicateMessages(
 			completion.choices
 				.filter((choice) => choice.message?.content)
