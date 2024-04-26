@@ -1,5 +1,5 @@
 import { execa } from 'execa';
-import { black, dim, green, red, bgCyan } from 'kolorist';
+import { black, dim, green, red, bgCyan, lightYellow } from 'kolorist';
 import {
 	intro,
 	outro,
@@ -16,12 +16,14 @@ import {
 import { getConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
 import { KnownError, handleCliError } from '../utils/error.js';
+import { generatePrompt } from '../utils/prompt.js';
 
 export default async (
 	generate: number | undefined,
 	excludeFiles: string[],
 	stageAll: boolean,
 	commitType: string | undefined,
+	promptOnly: boolean,
 	rawArgv: string[]
 ) =>
 	(async () => {
@@ -50,6 +52,13 @@ export default async (
 				.map((file) => `     ${file}`)
 				.join('\n')}`
 		);
+
+		if (promptOnly) {
+			let systemPrompt = generatePrompt('en', 'conventional');
+			outro(`${green('→')}  System prompt:\n ${lightYellow(systemPrompt)}`);
+			outro(`${green('→')}  User prompt:\n ${lightYellow(staged.diff)}`)
+			return;
+		}
 
 		const { env } = process;
 		const config = await getConfig({

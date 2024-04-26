@@ -42,6 +42,11 @@ cli(
 				description: 'Type of commit message to generate',
 				alias: 't',
 			},
+			promptOnly: {
+				type: Boolean,
+				description: 'Display the prompt on the console without executing the action of generating a commit',
+				default: false
+			}
 		},
 
 		commands: [configCommand, hookCommand],
@@ -61,6 +66,7 @@ cli(
 				argv.flags.exclude,
 				argv.flags.all,
 				argv.flags.type,
+				argv.flags.promptOnly,
 				rawArgv
 			);
 		}
