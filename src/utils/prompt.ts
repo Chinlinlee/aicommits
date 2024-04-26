@@ -1,4 +1,5 @@
 import type { CommitType } from './config.js';
+import { summarizeFileDiffTemplate } from '../prompt-templates/summarize-file-diff.js';
 
 const commitTypeFormats: Record<CommitType, string> = {
 	'': '<commit message>',
@@ -18,7 +19,7 @@ const commitTypes: Record<CommitType, string> = {
 	 * Conventional Changelog:
 	 * https://github.com/conventional-changelog/conventional-changelog/blob/d0e5d5926c8addba74bc962553dd8bcfba90e228/packages/conventional-changelog-conventionalcommits/writer-opts.js#L182-L193
 	 */
-	conventional: `Choose a type from the type-to-description JSON below that best describes the git diff:\n${JSON.stringify(
+	conventional: `Choose a type from the type-to-description JSON below that best describes the git diff, with a maximum of 100 words. Add two line breaks at the end and continue with a bullet-based body:\n${JSON.stringify(
 		{
 			docs: 'Documentation only changes',
 			style:
@@ -38,18 +39,16 @@ const commitTypes: Record<CommitType, string> = {
 	)}`,
 };
 
-export const generatePrompt = (
+export const generatePrompt = async (
 	locale: string,
 	maxLength: number,
 	type: CommitType
 ) =>
 	[
-		'Generate a concise git commit message written in present tense for the following code diff with the given specifications below:',
-		`Message language: ${locale}`,
-		`Commit message must be a maximum of ${maxLength} characters.`,
-		'Exclude anything unnecessary such as translation. Your entire response will be passed directly into git commit.',
-		commitTypes[type],
-		specifyCommitFormat(type),
+		summarizeFileDiffTemplate,
+		'\n',
+		commitTypeFormats[type],
+		specifyCommitFormat(type)
 	]
-		.filter(Boolean)
-		.join('\n');
+	.filter(Boolean)
+	.join('\n')
