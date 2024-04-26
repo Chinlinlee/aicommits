@@ -148,7 +148,7 @@ export const generateCommitMessage = async (
 				messages: [
 					{
 						role: 'system',
-						content: generatePrompt(locale, type),
+						content: generatePrompt(locale, maxLength, type),
 					},
 					{
 						role: 'user',

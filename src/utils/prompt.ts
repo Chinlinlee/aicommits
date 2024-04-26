@@ -41,10 +41,12 @@ const commitTypes: Record<CommitType, string> = {
 
 export const generatePrompt = (
 	locale: string,
+	maxLength: number,
 	type: CommitType
 ) =>
 	[
 		'### Task: Summarize Git Diff with Commit Messages\n',
+		'Whole content should within ' + maxLength + '\n',
 		commitTypes[type],
 		specifyCommitFormat(type),
 		'\n#### Part 2: Summarize Git Diff\n',
