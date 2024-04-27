@@ -14,9 +14,31 @@ import {
 	getDetectedMessage,
 } from '../utils/git.js';
 import { getConfig } from '../utils/config.js';
+import type { ValidConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { generatePrompt } from '../utils/prompt.js';
+import { ApiKeyNames, type ApiKeyName } from '../services/ai/ai-service.js';
+
+function getAvailableApiKeys(config: ValidConfig) {
+	return Object.entries(config)
+				.filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
+				.filter(([_, value]) => !!value)
+				.map(([key]) => key as ApiKeyName);
+}
+
+function validateApiKeys(config: ValidConfig) {
+	let availableApiKeyNames = getAvailableApiKeys(config);
+
+	const hasNoApiKey = availableApiKeyNames.length === 0;
+	if (hasNoApiKey) {
+		throw new KnownError(
+			'Please set one API key via `aicommits config set OPENAI_KEY=<your token>`, supported keys: ' + ApiKeyNames.join(', ')
+		);
+	}
+
+	return availableApiKeyNames;
+}
 
 export default async (
 	generate: number | undefined,
@@ -53,21 +75,24 @@ export default async (
 				.join('\n')}`
 		);
 
-		if (promptOnly) {
-			let systemPrompt = generatePrompt('en', 'conventional');
-			outro(`${green('→')}  System prompt:\n ${lightYellow(systemPrompt)}`);
-			outro(`${green('→')}  User prompt:\n ${lightYellow(staged.diff)}`)
-			return;
-		}
-
+		
 		const { env } = process;
 		const config = await getConfig({
 			OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
 			proxy:
-				env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
+			env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
 			generate: generate?.toString(),
 			type: commitType?.toString(),
 		});
+
+		validateApiKeys(config);
+		
+		if (promptOnly) {
+			let systemPrompt = generatePrompt('en', config['max-length'], 'conventional');
+			outro(`${green('→')}  System prompt:\n ${lightYellow(systemPrompt)}`);
+			outro(`${green('→')}  User prompt:\n ${lightYellow(staged.diff)}`)
+			return;
+		}
 
 		const s = spinner();
 		s.start('The AI is analyzing your changes');
