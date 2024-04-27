@@ -142,6 +142,17 @@ const configParsers = {
 
 		return parsed;
 	},
+	'max-tokens'(maxTokens?: string) {
+		if (!maxTokens) {
+			return 300;
+		}
+
+		parseAssert('max-tokens', /^\d+$/.test(maxTokens), 'Must be an integer');
+
+		const parsed = Number(maxTokens);
+
+		return parsed;
+	}
 } as const;
 
 type ConfigKeys = keyof typeof configParsers;

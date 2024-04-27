@@ -38,7 +38,7 @@ export class OpenAiService extends AiService {
 				top_p: 1,
 				frequency_penalty: 0,
 				presence_penalty: 0,
-				max_tokens: 300,
+				max_tokens: this.config['max-tokens'],
 				stream: false,
 				n: 1,
 			});

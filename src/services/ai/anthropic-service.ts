@@ -27,7 +27,7 @@ export class AnthropicService extends AiService {
 
 			const result = await this.anthropic.messages.create({
 				model: this.config.ANTHROPIC_MODEL,
-				max_tokens: 300,
+				max_tokens: this.config['max-tokens'],
 				temperature: 0.7,
 				messages: [
 					{
