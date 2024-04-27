@@ -152,7 +152,20 @@ const configParsers = {
 		const parsed = Number(maxTokens);
 
 		return parsed;
-	}
+	},
+	temperature(temperature?: string) {
+        if (!temperature) {
+            return 0.7;
+        }
+
+        parseAssert('temperature', /^(2|\d)(\.\d{1,2})?$/.test(temperature), 'Must be decimal between 0 and 2');
+
+        const parsed = Number(temperature);
+        parseAssert('temperature', parsed > 0.0, 'Must be greater than 0');
+        parseAssert('temperature', parsed <= 2.0, 'Must be less than or equal to 2');
+
+        return parsed;
+    },
 } as const;
 
 type ConfigKeys = keyof typeof configParsers;

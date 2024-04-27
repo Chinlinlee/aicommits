@@ -34,7 +34,7 @@ export class OpenAiService extends AiService {
 						content: this.stage?.diff,
 					},
 				],
-				temperature: 0.7,
+				temperature: this.config['temperature'],
 				top_p: 1,
 				frequency_penalty: 0,
 				presence_penalty: 0,
