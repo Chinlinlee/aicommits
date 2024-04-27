@@ -92,25 +92,33 @@ export default async (
 
 		const s = spinner();
 		s.start('The AI is analyzing your changes');
-		let messages: string[];
+		let message: string;
+		let aiService: AiService;
 		try {
-			let aiService = AiServiceFactory.create(
+			aiService = AiServiceFactory.create(
 				AI_SERVICE_MAPPING[aiType.name],
 				config,
 				staged,
 				aiType
 			);
-			messages = await aiService.generateCommitMessage();
+			message = await aiService.generateMessage();
 		} finally {
 			s.stop('Changes analyzed');
 		}
 
-		if (messages.length === 0) {
+		const s2 = spinner();
+		s2.start('The AI is generating conventional commit message');
+		try {
+			let conventionalMessage = await aiService.generateConventionalCommitMessage('conventional');
+			message = `${conventionalMessage}\n\n${message}`;
+		} finally {
+			s2.stop('Generated conventional commit message');
+		}
+
+		if (!message) {
 			throw new KnownError('No commit messages were generated. Try again.');
 		}
 
-		let message: string;
-		[message] = messages;
 		const confirmed = await confirm({
 			message: `Use this commit message?\n\n   ${message}\n`,
 		});

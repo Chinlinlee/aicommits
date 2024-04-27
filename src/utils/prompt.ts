@@ -32,9 +32,21 @@ export const generatePrompt = (
 		'### Task: Summarize Git Diff with Commit Messages\n',
 		'- Message language: ' + locale,
 		'- Whole content should within ' + maxLength + ' characters\n',
-		commitTypes[type],
-		'\n#### Part 2: Summarize Git Diff\n',
+		'#### Summarize Git Diff\n',
 		summarizeFileDiffTemplate
 	]
 	.filter(Boolean)
 	.join('\n')
+
+export const getSummarizePrompt = (locale: string, maxLength: number) =>
+	[
+		'### Task: Summarize Git Diff with Commit Messages\n',
+		'- Message language: ' + locale,
+		'- Whole content should within ' + maxLength + ' characters\n',
+		'#### Summarize Git Diff\n',
+		summarizeFileDiffTemplate
+	]
+	.filter(Boolean)
+	.join('\n')
+
+export const getConventionalPrompt = (type: CommitType) => commitTypes[type]

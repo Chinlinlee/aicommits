@@ -1,4 +1,4 @@
-import { ValidConfig } from '../../utils/config.js';
+import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StageDiff } from '../../utils/git.js';
 
 export const AI_TYPE = {
@@ -29,7 +29,9 @@ export abstract class AiService {
 		this.aiType = aiType;
 	}
 
-	abstract generateCommitMessage(): Promise<string[]>;
+	abstract generateMessage(): Promise<string>;
+
+	abstract generateConventionalCommitMessage(type: CommitType): Promise<string>;
 
 	protected sanitizeMessage(message: string) {
 		return message

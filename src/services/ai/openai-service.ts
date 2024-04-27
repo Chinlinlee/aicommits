@@ -6,50 +6,60 @@ import type {
 	CreateChatCompletionResponse,
 } from 'openai';
 import { KnownError } from '../../utils/error.js';
-import { type ValidConfig } from '../../utils/config.js';
+import { CommitType, type ValidConfig } from '../../utils/config.js';
 import { type StageDiff } from '../../utils/git.js';
 import { AiService, type AiType } from './ai-service.js';
-import { generatePrompt } from '../../utils/prompt.js';
+import { generatePrompt, getConventionalPrompt } from '../../utils/prompt.js';
 
 export class OpenAiService extends AiService {
+	private chatCompletionRequest: CreateChatCompletionRequest;
+
 	constructor(config: ValidConfig, stage: StageDiff, aiType: AiType) {
 		super(config, stage, aiType);
+
+		this.chatCompletionRequest = {
+			model: this.config.model,
+			messages: [
+				{
+					role: 'system',
+					content: generatePrompt(
+						this.config.locale,
+						this.config['max-length'],
+						this.config.type
+					),
+				},
+				{
+					role: 'user',
+					content: this.stage?.diff,
+				},
+			],
+			temperature: this.config['temperature'],
+			top_p: 1,
+			frequency_penalty: 0,
+			presence_penalty: 0,
+			max_tokens: this.config['max-tokens'],
+			stream: false,
+			n: 1,
+		};
 	}
 
-	async generateCommitMessage(): Promise<string[]> {
+	async generateMessage(): Promise<string> {
 		try {
-			const completion = await this.#createChatCompletion({
-				model: this.config.model,
-				messages: [
-					{
-						role: 'system',
-						content: generatePrompt(
-							this.config.locale,
-							this.config['max-length'],
-							this.config.type
-						),
-					},
-					{
-						role: 'user',
-						content: this.stage?.diff,
-					},
-				],
-				temperature: this.config['temperature'],
-				top_p: 1,
-				frequency_penalty: 0,
-				presence_penalty: 0,
-				max_tokens: this.config['max-tokens'],
-				stream: false,
-				n: 1,
+			const completion = await this.#createChatCompletion(this.chatCompletionRequest);
+			
+			let notEmptyMessage = completion.choices
+									.filter((choice) => choice.message?.content)
+									.map((choice) =>
+										this.sanitizeMessage(choice.message!.content! as string)
+									);
+
+			let message =  this.sanitizeMessage(notEmptyMessage.at(0) as string);
+			this.chatCompletionRequest.messages.push({
+				role: 'assistant',
+				content: message
 			});
-			return this.deduplicateMessages(
-				completion.choices
-					.filter((choice) => choice.message?.content)
-					.map((choice) =>
-						this.sanitizeMessage(choice.message!.content! as string)
-					)
-			);
-		} catch (e) {
+			return message;
+		} catch(e) {
 			const errorAsAny = e as any;
 			if (errorAsAny.code === 'ENOTFOUND') {
 				throw new KnownError(
@@ -59,6 +69,14 @@ export class OpenAiService extends AiService {
 
 			throw errorAsAny;
 		}
+	}
+
+	async generateConventionalCommitMessage(type: CommitType): Promise<string> {
+		this.chatCompletionRequest.messages.push({
+			role: 'user',
+			content: getConventionalPrompt(type)
+		});
+		return await this.generateMessage();
 	}
 
 	async #createChatCompletion(json: CreateChatCompletionRequest) {
