@@ -18,26 +18,23 @@ import type { ValidConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { generatePrompt } from '../utils/prompt.js';
-import { ApiKeyNames, type ApiKeyName } from '../services/ai/ai-service.js';
+import { AiTypes } from '../services/ai/ai-service.js';
+import { AiServiceFactory } from '../services/ai/ai-service-factory.js';
+import { OpenAiService } from '../services/ai/openai-service.js';
 
-function getAvailableApiKeys(config: ValidConfig) {
-	return Object.entries(config)
-				.filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
-				.filter(([_, value]) => !!value)
-				.map(([key]) => key as ApiKeyName);
-}
+const AI_SERVICE_MAPPING = {
+	openai: OpenAiService,
+	anthropic: OpenAiService
+};
 
-function validateApiKeys(config: ValidConfig) {
-	let availableApiKeyNames = getAvailableApiKeys(config);
-
-	const hasNoApiKey = availableApiKeyNames.length === 0;
-	if (hasNoApiKey) {
-		throw new KnownError(
-			'Please set one API key via `aicommits config set OPENAI_KEY=<your token>`, supported keys: ' + ApiKeyNames.join(', ')
-		);
+function validateAiType(config: ValidConfig) {
+	let userAiTypeName = config.AI_SOURCE;
+	let aiType = AiTypes.find((t) => t.name === userAiTypeName);
+	if (!aiType) {
+		throw new KnownError('You are setting the ai source to ' + config.AI_SOURCE + ' but key is empty');
 	}
 
-	return availableApiKeyNames;
+	return aiType;
 }
 
 export default async (
@@ -74,7 +71,6 @@ export default async (
 				.map((file) => `     ${file}`)
 				.join('\n')}`
 		);
-
 		
 		const { env } = process;
 		const config = await getConfig({
@@ -85,7 +81,7 @@ export default async (
 			type: commitType?.toString(),
 		});
 
-		validateApiKeys(config);
+		let aiType = validateAiType(config);
 		
 		if (promptOnly) {
 			let systemPrompt = generatePrompt('en', config['max-length'], 'conventional');
@@ -98,17 +94,13 @@ export default async (
 		s.start('The AI is analyzing your changes');
 		let messages: string[];
 		try {
-			messages = await generateCommitMessage(
-				config.OPENAI_KEY,
-				config.model,
-				config.locale,
-				staged.diff,
-				config.generate,
-				config['max-length'],
-				config.type,
-				config.timeout,
-				config.proxy
+			let aiService = AiServiceFactory.create(
+				AI_SERVICE_MAPPING[aiType.name],
+				config,
+				staged,
+				aiType
 			);
+			messages = await aiService.generateCommitMessage();
 		} finally {
 			s.stop('Changes analyzed');
 		}

@@ -5,6 +5,7 @@ import ini from 'ini';
 import type { TiktokenModel } from '@dqbd/tiktoken';
 import { fileExists } from './fs.js';
 import { KnownError } from './error.js';
+import { AI_TYPE, AiTypes } from '../services/ai/ai-service.js';
 
 const commitTypes = ['', 'conventional'] as const;
 
@@ -21,6 +22,15 @@ const parseAssert = (name: string, condition: any, message: string) => {
 };
 
 const configParsers = {
+	AI_SOURCE(company?: string) {
+		if (!company) {
+			return AI_TYPE.OPEN_AI.name;
+		}
+
+		parseAssert('AI_SOURCE', AiTypes.find((v) => v.name === company), "Must be 'openai' or 'anthropic'");
+
+		return company;
+	},
 	OPENAI_KEY(key?: string) {
 		if (!key) {
 			return '';
@@ -28,6 +38,25 @@ const configParsers = {
 		parseAssert('OPENAI_KEY', key.startsWith('sk-'), 'Must start with "sk-"');
 		// Key can range from 43~51 characters. There's no spec to assert this.
 
+		return key;
+	},
+	ANTHROPIC_MODEL(model?: string) {
+		if (!model || model.length === 0) {
+			return 'claude-2.1';
+		}
+		const supportModels = ['claude-2.1', 'claude-2.0', 'claude-instant-1.2'];
+
+		parseAssert(
+			'ANTHROPIC_MODEL',
+			supportModels.includes(model),
+			'Invalid model type of Anthropic'
+		);
+		return model;
+	},
+	ANTHROPIC_KEY(key?: string) {
+		if (!key) {
+			return '';
+		}
 		return key;
 	},
 	locale(locale?: string) {

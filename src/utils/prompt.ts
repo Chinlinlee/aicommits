@@ -46,7 +46,7 @@ export const generatePrompt = (
 ) =>
 	[
 		'### Task: Summarize Git Diff with Commit Messages\n',
-		'Whole content should within ' + maxLength + '\n',
+		'Whole content should within ' + maxLength + ' characters\n',
 		commitTypes[type],
 		specifyCommitFormat(type),
 		'\n#### Part 2: Summarize Git Diff\n',
