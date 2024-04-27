@@ -44,7 +44,7 @@ const configParsers = {
 		if (!model || model.length === 0) {
 			return 'claude-2.1';
 		}
-		const supportModels = ['claude-2.1', 'claude-2.0', 'claude-instant-1.2'];
+		const supportModels = ['claude-2.1', 'claude-2.0', 'claude-instant-1.2', 'claude-3-haiku-20240307'];
 
 		parseAssert(
 			'ANTHROPIC_MODEL',

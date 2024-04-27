@@ -12,19 +12,21 @@ import {
 	assertGitRepo,
 	getStagedDiff,
 	getDetectedMessage,
+	StageDiff,
 } from '../utils/git.js';
 import { getConfig } from '../utils/config.js';
 import type { ValidConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { generatePrompt } from '../utils/prompt.js';
-import { AiTypes } from '../services/ai/ai-service.js';
+import { AiService, AiType, AiTypes } from '../services/ai/ai-service.js';
 import { AiServiceFactory } from '../services/ai/ai-service-factory.js';
 import { OpenAiService } from '../services/ai/openai-service.js';
+import { AnthropicService } from '../services/ai/anthropic-service.js';
 
 const AI_SERVICE_MAPPING = {
-	openai: OpenAiService,
-	anthropic: OpenAiService
+	openai: OpenAiService as new (config: ValidConfig, stage: StageDiff, aiType: AiType) => AiService,
+	anthropic: AnthropicService as new (config: ValidConfig, stage: StageDiff, aiType: AiType) => AiService
 };
 
 function validateAiType(config: ValidConfig) {
