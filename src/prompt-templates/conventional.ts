@@ -1,5 +1,4 @@
 export const conventionalCommitTemplate = [
-    '#### Part 1: Choose the Best Type\n',
     'Choose a type from the following options that best describes the git diff:',
     '- build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)',
     '- chore: Updating libraries, copyrights or other repo setting, includes updating dependencies.',
