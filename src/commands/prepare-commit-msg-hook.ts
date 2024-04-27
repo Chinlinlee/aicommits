@@ -44,7 +44,6 @@ export default () =>
 				config.model,
 				config.locale,
 				staged!.diff,
-				config.generate,
 				config['max-length'],
 				config.type,
 				config.timeout,

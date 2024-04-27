@@ -134,7 +134,6 @@ export const generateCommitMessage = async (
 	model: TiktokenModel,
 	locale: string,
 	diff: string,
-	completions: number,
 	maxLength: number,
 	type: CommitType,
 	timeout: number,
@@ -161,7 +160,7 @@ export const generateCommitMessage = async (
 				presence_penalty: 0,
 				max_tokens: 200,
 				stream: false,
-				n: completions,
+				n: 1,
 			},
 			timeout,
 			proxy

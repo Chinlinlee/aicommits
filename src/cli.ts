@@ -19,12 +19,6 @@ cli(
 		 * https://git-scm.com/docs/git-commit
 		 */
 		flags: {
-			generate: {
-				type: Number,
-				description:
-					'Number of messages to generate (Warning: generating multiple costs more) (default: 1)',
-				alias: 'g',
-			},
 			exclude: {
 				type: [String],
 				description: 'Files to exclude from AI analysis',
@@ -62,7 +56,6 @@ cli(
 			prepareCommitMessageHook();
 		} else {
 			aicommits(
-				argv.flags.generate,
 				argv.flags.exclude,
 				argv.flags.all,
 				argv.flags.type,

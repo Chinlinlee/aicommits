@@ -40,7 +40,6 @@ function validateAiType(config: ValidConfig) {
 }
 
 export default async (
-	generate: number | undefined,
 	excludeFiles: string[],
 	stageAll: boolean,
 	commitType: string | undefined,
@@ -79,7 +78,6 @@ export default async (
 			OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
 			proxy:
 			env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
-			generate: generate?.toString(),
 			type: commitType?.toString(),
 		});
 
@@ -112,29 +110,28 @@ export default async (
 		}
 
 		let message: string;
-		if (messages.length === 1) {
-			[message] = messages;
-			const confirmed = await confirm({
-				message: `Use this commit message?\n\n   ${message}\n`,
-			});
+		[message] = messages;
+		const confirmed = await confirm({
+			message: `Use this commit message?\n\n   ${message}\n`,
+		});
 
-			if (!confirmed || isCancel(confirmed)) {
-				outro('Commit cancelled');
-				return;
-			}
-		} else {
-			const selected = await select({
-				message: `Pick a commit message to use: ${dim('(Ctrl+c to exit)')}`,
-				options: messages.map((value) => ({ label: value, value })),
-			});
-
-			if (isCancel(selected)) {
-				outro('Commit cancelled');
-				return;
-			}
-
-			message = selected as string;
+		if (!confirmed || isCancel(confirmed)) {
+			outro('Commit cancelled');
+			return;
 		}
+		// else {
+		// 	const selected = await select({
+		// 		message: `Pick a commit message to use: ${dim('(Ctrl+c to exit)')}`,
+		// 		options: messages.map((value) => ({ label: value, value })),
+		// 	});
+
+		// 	if (isCancel(selected)) {
+		// 		outro('Commit cancelled');
+		// 		return;
+		// 	}
+
+		// 	message = selected as string;
+		// }
 
 		await execa('git', ['commit', '-m', message, ...rawArgv]);
 

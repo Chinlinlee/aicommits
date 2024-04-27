@@ -72,19 +72,6 @@ const configParsers = {
 		);
 		return locale;
 	},
-	generate(count?: string) {
-		if (!count) {
-			return 1;
-		}
-
-		parseAssert('generate', /^\d+$/.test(count), 'Must be an integer');
-
-		const parsed = Number(count);
-		parseAssert('generate', parsed > 0, 'Must be greater than 0');
-		parseAssert('generate', parsed <= 5, 'Must be less or equal to 5');
-
-		return parsed;
-	},
 	type(type?: string) {
 		if (!type) {
 			return '';
