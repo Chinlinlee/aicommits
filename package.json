@@ -19,7 +19,9 @@
     "aic": "./dist/cli.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.7",
     "@dqbd/tiktoken": "^1.0.2",
-    "desm": "^1.3.1"
+    "desm": "^1.3.1",
+    "undici": "^6.14.1"
   }
 }

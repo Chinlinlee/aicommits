@@ -177,14 +177,6 @@ Default: `en`
 
 The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639-1_codes.
 
-#### generate
-
-Default: `1`
-
-The number of commit messages to generate to pick from.
-
-Note, this will use more tokens as it generates more results.
-
 #### proxy
 
 Set a HTTP/HTTPS proxy to use for requests.
